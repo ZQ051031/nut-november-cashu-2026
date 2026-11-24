@@ -24,6 +24,7 @@ test('the committed wallet loads from disk and rejects other mints without a net
   })).toString('base64url');
   await page.locator('#receive-token').fill(`cashuA${foreign}`);
   await page.getByRole('button', { name: 'Redeem token' }).click();
+  await page.waitForFunction(() => document.getElementById('status').dataset.error === 'true', null, { timeout: 5000 });
   assert.match(await page.getByRole('status').textContent(), /Only sat tokens from Testnut/);
   assert.equal(await page.locator('#balance').textContent(), '0');
   assert.deepEqual(requests, []);
