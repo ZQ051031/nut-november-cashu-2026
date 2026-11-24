@@ -1,0 +1,15 @@
+{
+  "name": "testnut-pocket",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --format=iife --target=es2022 --minify --legal-comments=inline --outfile=dist/app.js",
+    "test": "node --test test/*.test.js",
+    "test:live": "node --test test/live.js"
+  },
+  "dependencies": { "@cashu/cashu-ts": "4.12.0" },
+  "devDependencies": { "esbuild": "0.28.2", "playwright": "1.65.1" }
+}

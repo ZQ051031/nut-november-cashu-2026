@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="connect-src https://testnut.cashu.space; base-uri 'none'; object-src 'none'; form-action 'none'">
+  <meta name="theme-color" content="#f5f3eb">
+  <title>Testnut Pocket — Cashu test wallet</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="dist/app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span> Testnut Pocket</div>
+      <span class="edition">NUT NOVEMBER / 2026</span>
+    </header>
+
+    <aside class="warning"><strong>TEST ONLY</strong><span>Do not use real funds. These tokens have no monetary value.</span></aside>
+
+    <section class="hero" aria-labelledby="balance-heading">
+      <div class="hero-top">
+        <h1 class="eyebrow" id="balance-heading">Pocket balance</h1>
+        <span class="mint-badge">Testnut mint</span>
+      </div>
+      <p class="balance"><span id="balance">—</span> <small>test sats</small></p>
+      <p class="hero-note">A Cashu wallet for learning by doing.</p>
+    </section>
+
+    <section class="actions" aria-label="Wallet actions">
+      <form id="mint">
+        <span class="step" aria-hidden="true">01 / ADD</span>
+        <h2>Mint</h2>
+        <p>Make fresh test ecash. There’s no invoice to pay.</p>
+        <label for="mint-amount">Amount (test sats)</label>
+        <input id="mint-amount" name="amount" type="text" inputmode="numeric" value="64" required>
+        <button type="submit">Mint test sats</button>
+      </form>
+
+      <form id="send">
+        <span class="step" aria-hidden="true">02 / SHARE</span>
+        <h2>Send</h2>
+        <p>Turn part of your balance into a shareable token.</p>
+        <label for="send-amount">Amount (test sats)</label>
+        <input id="send-amount" name="amount" type="text" inputmode="numeric" placeholder="e.g. 16" required>
+        <button type="submit">Create token</button>
+      </form>
+
+      <form id="receive">
+        <span class="step" aria-hidden="true">03 / REDEEM</span>
+        <h2>Receive</h2>
+        <p>Redeem a Testnut token into this browser’s balance.</p>
+        <label for="receive-token">Cashu token</label>
+        <textarea id="receive-token" name="token" rows="1" placeholder="cashuB…" maxlength="65536" spellcheck="false" autocomplete="off" required></textarea>
+        <button type="submit">Redeem token</button>
+      </form>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
+    <section id="outgoing" class="outgoing" aria-labelledby="outgoing-heading" hidden>
+      <h2 id="outgoing-heading">Outgoing test token</h2>
+      <p>Anyone with this token can redeem it first. Share it only with your intended recipient.</p>
+      <label for="outgoing-token">Cashu token</label>
+      <div class="token-row">
+        <textarea id="outgoing-token" readonly rows="2" spellcheck="false"></textarea>
+        <button id="copy-token" type="button">Copy token</button>
+      </div>
+    </section>
+
+    <section class="history" aria-labelledby="history-heading">
+      <div class="history-top"><h2 id="history-heading">Activity</h2><span class="eyebrow">This browser</span></div>
+      <p id="empty-history">No activity yet. Mint some test sats to get started.</p>
+      <ol id="history-list"></ol>
+    </section>
+    <footer><span>Powered by Cashu · <code>testnut.cashu.space</code></span><span>Local storage only · No account</span></footer>
+    <noscript>This wallet needs JavaScript to work.</noscript>
+  </main>
+</body>
+</html>
