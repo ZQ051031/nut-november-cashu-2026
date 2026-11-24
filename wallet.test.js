@@ -151,6 +151,15 @@ test('keeps balances separate and does not contact token-supplied mints', async 
   assert.equal(store.snapshot().balance, 16n);
 });
 
+test('rejects mint URLs cashu-ts would not connect to without saving them', () => {
+  const { open } = harness();
+  const store = open();
+  assert.throws(() => store.switchMint(OTHER_MINT + '?'), /query/);
+  assert.throws(() => store.switchMint(OTHER_MINT + '#'), /fragment/);
+  assert.throws(() => store.switchMint(OTHER_MINT + '/a%20b'), /percent-encoded/);
+  assert.equal(open().snapshot().mint, TEST_MINT);
+});
+
 test('rejects invalid amounts, overspending, and non-sat tokens before connecting', async () => {
   const { open, connected } = harness();
   const store = open();

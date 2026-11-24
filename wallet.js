@@ -1,19 +1,12 @@
-import { HttpResponseError, MintOperationError } from '@cashu/cashu-ts';
+import { HttpResponseError, MintOperationError, normalizeMintUrl } from '@cashu/cashu-ts';
 
 export const TEST_MINT = 'https://testnut.cashu.space';
 export const STORAGE_KEY = 'testnut-pocket-v1';
 
 export function mintUrl(input) {
-  let url;
-  try {
-    url = new URL(input.trim());
-  } catch {
-    throw new Error('Enter a valid HTTPS mint URL.');
-  }
-  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
-    throw new Error('Use an HTTPS mint URL without credentials, a query, or a fragment.');
-  }
-  return url.href.replace(/\/+$/, '');
+  const url = normalizeMintUrl(input.trim());
+  if (!url.startsWith('https://')) throw new Error('Use an HTTPS mint URL.');
+  return url;
 }
 
 function sats(input) {
