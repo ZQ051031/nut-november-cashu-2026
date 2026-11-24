@@ -29,10 +29,20 @@ function harness() {
       assert.equal(response.state, 'PAID');
       return [proof(amount, 'minted')];
     },
-    async send(amount, proofs) {
+    sendOffline() {
+      return { send: [] };
+    },
+    async prepareSwapToSend(amount, proofs) {
       assert.equal(amount, 6);
       assert.equal(proofs[0].secret, 'minted');
       assert.equal(Number(proofs[0].amount), 16);
+      return { sendOutputs: [{ blindedMessage: { id: proof(6, 'outgoing').id } }] };
+    },
+    getFeesForProofs(proofs) {
+      assert.equal(proofs[0].id, proof(6, 'outgoing').id);
+      return Amount.from(1);
+    },
+    async completeSwap() {
       return { keep: [proof(9, 'change')], send: [proof(6, 'outgoing')] };
     },
     async receive(token) {
@@ -100,6 +110,28 @@ test('clears a missing quote but keeps it when the quote check has a transient e
   assert.equal(open().snapshot().quote, null);
   quote.state = 'PAID';
   assert.equal(await store.create('16'), true);
+});
+
+test('rejects sends at or below the redemption fee before changing any proofs', async () => {
+  const { open, mint } = harness();
+  const store = open();
+  await store.create('16');
+  const before = store.snapshot();
+  mint.getFeesForProofs = () => Amount.from(16);
+  mint.sendOffline = (amount) => ({ keep: [], send: [proof(amount, 'offline')] });
+  mint.prepareSwapToSend = () => assert.fail('Exact match should not need a swap');
+  await assert.rejects(store.send('16'), /Send more than 16 sats/);
+  assert.deepEqual(store.snapshot(), before);
+
+  mint.sendOffline = () => ({ send: [] });
+  mint.prepareSwapToSend = async () => ({ sendOutputs: [{ blindedMessage: { id: 'mock-output' } }] });
+  mint.getFeesForProofs = (outputs) => {
+    assert.deepEqual(outputs, [{ id: 'mock-output' }]);
+    return Amount.from(7);
+  };
+  mint.completeSwap = () => assert.fail('A worthless token should not be swapped');
+  await assert.rejects(store.send('6'), /Send more than 7 sats/);
+  assert.deepEqual(store.snapshot(), before);
 });
 
 test('keeps balances separate and does not contact token-supplied mints', async () => {

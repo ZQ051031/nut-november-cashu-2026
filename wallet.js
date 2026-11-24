@@ -116,7 +116,21 @@ export function createWalletStore({ storage, connect, inspectToken, encodeToken,
       const previousBalance = balance(current.proofs);
       if (BigInt(amount) > previousBalance) throw new Error('Not enough sats at this mint.');
       const wallet = await connect(data.mint);
-      const { keep, send } = await wallet.send(amount, current.proofs);
+      let offline;
+      try {
+        offline = wallet.sendOffline(amount, current.proofs);
+      } catch {
+        // An exact offline selection is not always possible.
+      }
+      const exactBearerMatch = offline && balance(offline.send) === BigInt(amount)
+        && offline.send.every((proof) => !proof.secret.trimStart().startsWith('['));
+      const preview = exactBearerMatch ? null : await wallet.prepareSwapToSend(amount, current.proofs);
+      const outgoing = preview ? preview.sendOutputs.map(({ blindedMessage }) => blindedMessage) : offline.send;
+      const fee = wallet.getFeesForProofs(outgoing);
+      if (fee.greaterThanOrEqual(amount)) {
+        throw new Error(`Send more than ${fee.toString()} sats so the token is worth more than the redemption fee.`);
+      }
+      const { keep, send } = preview ? await wallet.completeSwap(preview) : offline;
       const token = encodeToken({ mint: data.mint, unit: 'sat', proofs: send });
       current.proofs = keep;
       record(data, current, 'Sent', previousBalance - balance(keep), { token, face: balance(send).toString() });
