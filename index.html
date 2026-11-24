@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Testnut Pocket — Cashu Test Wallet</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="wallet.bundle.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <span>NUT NOVEMBER / 2026</span>
+    <span class="badge">TEST ONLY</span>
+  </header>
+  <main>
+    <div class="intro">
+      <p class="eyebrow">THE CASHU PLAYGROUND</p>
+      <h1>Testnut Pocket</h1>
+      <p>Make, share and redeem Cashu test tokens. No account, no real payments.</p>
+    </div>
+    <p class="warning">Use test tokens only. Never pay a real invoice or paste a token worth real sats here.</p>
+
+    <section class="balance" aria-labelledby="balance-label">
+      <h2 id="balance-label">Available balance</h2>
+      <p><strong id="balance">—</strong> <span>sats</span></p>
+      <p id="active-mint">https://testnut.cashu.space</p>
+    </section>
+
+    <noscript><p class="warning">JavaScript is required to use this wallet.</p></noscript>
+    <p id="status" role="status" aria-live="polite">Loading wallet…</p>
+    <fieldset id="controls" disabled>
+      <legend class="sr-only">Wallet actions</legend>
+      <div class="actions">
+        <section class="card">
+          <p class="eyebrow">01 / FAUCET</p>
+          <h2>Create</h2>
+          <p id="create-hint">Get free ecash from the Testnut faucet.</p>
+          <form id="create">
+            <label for="create-amount">Amount in sats</label>
+            <input id="create-amount" inputmode="numeric" value="100" autocomplete="off">
+            <button id="create-button">Create test sats</button>
+          </form>
+        </section>
+        <section class="card">
+          <p class="eyebrow">02 / REDEEM</p>
+          <h2>Receive</h2>
+          <p>Turn a test token into local balance.</p>
+          <form id="receive">
+            <label for="incoming">Cashu token</label>
+            <textarea id="incoming" rows="1" placeholder="cashuA… or cashuB…" spellcheck="false"></textarea>
+            <button>Receive token</button>
+          </form>
+        </section>
+        <section class="card">
+          <p class="eyebrow">03 / SHARE</p>
+          <h2>Send</h2>
+          <p>Make a bearer token for someone else.</p>
+          <form id="send">
+            <label for="send-amount">Amount in sats</label>
+            <input id="send-amount" inputmode="numeric" placeholder="25" autocomplete="off">
+            <button>Create send token</button>
+          </form>
+        </section>
+      </div>
+
+      <section class="card outgoing" id="outgoing" hidden>
+        <h2>Share this token</h2>
+        <p>Anyone with this token can redeem it once. A mint may charge redemption fees.</p>
+        <label for="outgoing-token">Outgoing Cashu token</label>
+        <textarea id="outgoing-token" readonly rows="3" spellcheck="false"></textarea>
+        <button id="copy" type="button">Copy token</button>
+      </section>
+
+      <section class="card">
+        <h2>Transaction history</h2>
+        <p id="empty-history">No transactions at this mint yet.</p>
+        <ul id="history"></ul>
+      </section>
+
+      <details class="card">
+        <summary>Mint settings</summary>
+        <p>Only switch to another trusted test mint. Balances and history are separate per URL; changing the mint does not move sats. Free issuance is only available on Testnut.</p>
+        <form id="settings">
+          <label for="mint-url">Mint URL</label>
+          <input id="mint-url" type="url" required spellcheck="false">
+          <button>Switch mint</button>
+        </form>
+      </details>
+    </fieldset>
+  </main>
+  <footer>Cashu ecash · Stored in this browser · Test tokens have no monetary value</footer>
+</body>
+</html>
