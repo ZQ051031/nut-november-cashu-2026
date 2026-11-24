@@ -115,15 +115,19 @@ export function createWalletStore({ storage, connect, inspectToken, encodeToken,
       } catch {
         // An exact offline selection is not always possible.
       }
-      const exactBearerMatch = offline && balance(offline.send) === BigInt(amount)
-        && offline.send.every((proof) => !proof.secret.trimStart().startsWith('['));
-      const preview = exactBearerMatch ? null : await wallet.prepareSwapToSend(amount, current.proofs);
-      const outgoing = preview ? preview.sendOutputs.map(({ blindedMessage }) => blindedMessage) : offline.send;
-      const fee = wallet.getFeesForProofs(outgoing);
-      if (fee.greaterThanOrEqual(amount)) {
-        throw new Error(`Send more than ${fee.toString()} sats so the token is worth more than the redemption fee.`);
+      const redeemableOfflineMatch = offline && balance(offline.send) === BigInt(amount)
+        && offline.send.every((proof) => !proof.secret.trimStart().startsWith('['))
+        && wallet.getFeesForProofs(offline.send).lessThan(amount);
+      let result = offline;
+      if (!redeemableOfflineMatch) {
+        const preview = await wallet.prepareSwapToSend(amount, current.proofs);
+        const fee = wallet.getFeesForProofs(preview.sendOutputs.map(({ blindedMessage }) => blindedMessage));
+        if (fee.greaterThanOrEqual(amount)) {
+          throw new Error(`Send more than ${fee.toString()} sats so the token is worth more than the redemption fee.`);
+        }
+        result = await wallet.completeSwap(preview);
       }
-      const { keep, send } = preview ? await wallet.completeSwap(preview) : offline;
+      const { keep, send } = result;
       const token = encodeToken({ mint: data.mint, unit: 'sat', proofs: send });
       current.proofs = keep;
       record(data, current, 'Sent', previousBalance - balance(keep), { token, face: balance(send).toString() });

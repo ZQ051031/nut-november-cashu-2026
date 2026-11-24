@@ -119,19 +119,39 @@ test('rejects sends at or below the redemption fee before changing any proofs', 
   const before = store.snapshot();
   mint.getFeesForProofs = () => Amount.from(16);
   mint.sendOffline = (amount) => ({ keep: [], send: [proof(amount, 'offline')] });
-  mint.prepareSwapToSend = () => assert.fail('Exact match should not need a swap');
+  mint.prepareSwapToSend = async () => ({ sendOutputs: [{ blindedMessage: { id: 'mock-output' } }] });
+  mint.completeSwap = () => assert.fail('A worthless token should not be swapped');
   await assert.rejects(store.send('16'), /Send more than 16 sats/);
   assert.deepEqual(store.snapshot(), before);
 
   mint.sendOffline = () => ({ send: [] });
-  mint.prepareSwapToSend = async () => ({ sendOutputs: [{ blindedMessage: { id: 'mock-output' } }] });
   mint.getFeesForProofs = (outputs) => {
     assert.deepEqual(outputs, [{ id: 'mock-output' }]);
     return Amount.from(7);
   };
-  mint.completeSwap = () => assert.fail('A worthless token should not be swapped');
   await assert.rejects(store.send('6'), /Send more than 7 sats/);
   assert.deepEqual(store.snapshot(), before);
+});
+
+test('swaps a costly offline match into fewer proofs with a lower redemption fee', async () => {
+  const { open, mint } = harness();
+  const small = proof(2, 'small');
+  const medium = proof(4, 'medium');
+  const reserve = proof(10, 'reserve');
+  mint.mintProofsBolt11 = async () => [small, medium, reserve];
+  const store = open();
+  await store.create('16');
+  mint.sendOffline = () => ({ keep: [reserve], send: [small, medium] });
+  mint.getFeesForProofs = (proofs) => Amount.from(proofs.length === 2 ? 6 : 1);
+  mint.prepareSwapToSend = async (amount) => {
+    assert.equal(amount, 6);
+    return { sendOutputs: [{ blindedMessage: { id: 'mock-output' } }] };
+  };
+  mint.completeSwap = async () => ({ keep: [small, medium, proof(3, 'change')], send: [proof(6, 'swapped')] });
+  const token = await store.send('6');
+  assert.equal(getTokenMetadata(token).amount.toNumber(), 6);
+  assert.equal(getTokenMetadata(token).proofAmounts.length, 1);
+  assert.equal(store.snapshot().balance, 9n);
 });
 
 test('keeps balances separate and does not contact token-supplied mints', async () => {
