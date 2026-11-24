@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { Amount, getEncodedToken, getTokenMetadata } from '@cashu/cashu-ts';
+import { Amount, getEncodedToken, getTokenMetadata, MintOperationError } from '@cashu/cashu-ts';
 import { createWalletStore, TEST_MINT } from './wallet.js';
 
 const OTHER_MINT = 'https://other.example/mint';
@@ -85,6 +85,21 @@ test('resumes an unpaid quote from local storage without creating a second one',
   assert.equal(await second.create(''), true);
   assert.equal(second.snapshot().quote, null);
   assert.equal(second.snapshot().balance, 16n);
+});
+
+test('clears a missing quote but keeps it when the quote check has a transient error', async () => {
+  const { open, mint, quote } = harness();
+  quote.state = 'UNPAID';
+  const store = open();
+  assert.equal(await store.create('16'), false);
+  mint.checkMintQuoteBolt11 = async () => { throw new Error('Network unavailable'); };
+  await assert.rejects(store.create(''), /Network unavailable/);
+  assert.equal(open().snapshot().quote.id, 'mock-id');
+  mint.checkMintQuoteBolt11 = async () => { throw new MintOperationError(50000, 'Unknown quote'); };
+  await assert.rejects(store.create(''), /Create a new quote/);
+  assert.equal(open().snapshot().quote, null);
+  quote.state = 'PAID';
+  assert.equal(await store.create('16'), true);
 });
 
 test('keeps balances separate and does not contact token-supplied mints', async () => {

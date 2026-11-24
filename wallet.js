@@ -1,3 +1,5 @@
+import { HttpResponseError, MintOperationError } from '@cashu/cashu-ts';
+
 export const TEST_MINT = 'https://testnut.cashu.space';
 export const STORAGE_KEY = 'testnut-pocket-v1';
 
@@ -68,7 +70,16 @@ export function createWalletStore({ storage, connect, inspectToken, encodeToken,
       const wallet = await connect(data.mint);
       let quote;
       if (current.quote) {
-        quote = await wallet.checkMintQuoteBolt11(current.quote.id);
+        try {
+          quote = await wallet.checkMintQuoteBolt11(current.quote.id);
+        } catch (error) {
+          const unknownQuote = error instanceof MintOperationError
+            && /\b(?:unknown (?:mint )?quote|quote (?:was )?not found)\b/i.test(error.message);
+          if (!unknownQuote && !(error instanceof HttpResponseError && error.status === 404)) throw error;
+          current.quote = null;
+          save(data);
+          throw new Error('The mint no longer recognizes this test quote. Create a new quote.');
+        }
       } else {
         quote = await wallet.createMintQuoteBolt11(amount);
         current.quote = { id: quote.quote, amount };
