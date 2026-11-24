@@ -42,7 +42,7 @@ function harness() {
     },
   };
   const open = () => createWalletStore({
-    storage: { getItem: (key) => data.get(key), setItem: (key, value) => data.set(key, value) },
+    storage: { getItem: (key) => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) },
     connect: async (url) => {
       connected.push(url);
       return mint;
