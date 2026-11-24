@@ -11,7 +11,7 @@ Testnut Pocket is a browser-only Cashu wallet for learning how to mint, send, an
 
 ## 60-second demo
 
-From a fresh wallet, **Mint** 64 test sats → **Send** 16 test sats → copy the token → paste it into **Receive** → **Redeem token**. With no mint fees, the balance goes **0 → 64 → 48 → 64**. Refresh to check that the balance and activity persist. See [DEMO.md](DEMO.md) for a two-browser variation and a double-spend check.
+From a fresh wallet, **Mint** 64 test sats → **Send** 16 test sats → copy the token → paste it into **Receive** → **Redeem token**. In the demo run, the balance went **0 → 64 → 46 → 62** because the mint charged 2 test sats on the send. Refresh to check that the balance and activity persist. See [DEMO.md](DEMO.md) for a two-browser variation and a double-spend check.
 
 ## How it uses Cashu
 
